@@ -10,7 +10,16 @@ import Enums.Rol;
 import static Enums.Rol.A;
 import ManejoArchivos.ManejoArchivos;
 import static ManejoArchivos.ManejoArchivos.LeerValidando;
+import jakarta.mail.Authenticator;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -20,6 +29,12 @@ import java.util.Scanner;
  */
 public class Sistema {
 
+    private static final String correo = "pruebapoo65@gmail.com";
+    private static final String clave = "ogvk ijcx ndfb pwfr";
+    private static String host = "smtp.gmail.com";
+    private static String puerto = "465";
+    private static Properties properties = new Properties();
+    private static Session session;
     static ArrayList<Usuario> listaAutores = new ArrayList<>();
     static ArrayList<Revisor> listaRevisores = new ArrayList<>();
     static ArrayList<Articulo> listaArticulos = new ArrayList<>();
@@ -39,17 +54,62 @@ public class Sistema {
     }
 
     /**
+     *
+     */
+    public static void cargarPropiedades() {
+//        properties = new Properties();
+        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.ssl.trust", host);
+        properties.put("mail.smtp.port", puerto);
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.ssl.enable", true);
+        properties.put("mail.smtp.socketFactory.port", puerto);
+        properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+    }
+
+    public static String getCorreo() {
+        return correo;
+    }
+
+    /**
+     *
+     */
+    public static void crearSesion() {
+        session = Session.getInstance(properties, new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(correo, clave);
+            }
+        });
+    }
+
+    public static String sendMail(String destinatario, String asunto, String mensaje) {
+        try {
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(correo));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+            message.setSubject(asunto);
+            message.setText(mensaje);
+            Transport.send(message);
+            return "Correo enviado correctamente a " + destinatario;
+        } catch (MessagingException e) {
+            return "Error al enviar correo a " + destinatario + ": " + e.getMessage();
+        }
+    }
+
+    /**
      * *
      *
      * @param args
      */
     public static void main(String[] args) {
-        // TODO code application logic here
-        cargarAutores();
+        cargarPropiedades();
+        crearSesion();
+
+        System.out.println(sendMail("danielamaya4568@gmail.com", "owo", "al finnnnnnnn"));
         cargarArticulos();
         cargarUsuarios();
-//        rev = new Revision(null, null, null, null, null, null, null, null);
-//        System.out.println(listaUsuarios.get(5));
+        System.out.println(listaUsuarios);
         mostrarMenu();
     }
 
@@ -71,17 +131,6 @@ public class Sistema {
             }
         }
 
-    }
-
-    /**
-     * *
-     * Metodo utilizado para rellenar el ArrayList listaAutores
-     */
-    public static void cargarAutores() {
-        ArrayList<String[]> datosAutores = LeerValidando("autores.txt", false);
-        for (String[] dato : datosAutores) {
-            listaAutores.add(new Autor(dato[0], dato[1], dato[2], dato[3], dato[4], dato[5], dato[6], Rol.valueOf(dato[6])));
-        }
     }
 
     public static void cargarUsuarios() {
@@ -143,7 +192,7 @@ public class Sistema {
                     String art = sc.nextLine();
                     for (Articulo arti : listaArticulos) {
                         if (art.endsWith(arti.getCodigo())) {
-                            System.out.println(arti);
+                            System.out.println("Los datos a revisar son\n" + arti);
                         }
                     }
                     for (Revision rev : listaRevisiones) {
@@ -206,7 +255,6 @@ public class Sistema {
                                 if (rev.getEstado3().equals(ACEPTADO)) {
                                     rev.setEstado3(ACEPTADO);
                                     ManejoArchivos.EscribirArchivo("revisiones.txt", rev.toString());
-                                    mostrarMenu();
 
                                 }
                             }
@@ -214,29 +262,70 @@ public class Sistema {
                                 if (rev.getEstado3().equals(ACEPTADO)) {
                                     rev.setEstado3(RECHAZADO);
                                     ManejoArchivos.EscribirArchivo("revisiones.txt", rev.toString());
-                                    mostrarMenu();
 
                                 }
                             }
 
                         }
+                        if ((rev.getEstado1().equals(ACEPTADO) && rev.getEstado2().equals(ACEPTADO)) && rev.getEstado3().equals(ACEPTADO)) {
+                            for (Articulo arti : listaArticulos) {
+                                if (rev.getCodigo().endsWith(arti.getCodigo())) {
+                                    for (Usuario autor : listaAutores) {
+                                        if (autor instanceof Autor) {
+                                            if (arti.getAutorNombre().equals(autor.getNombre())) {
+                                                System.out.println(sendMail(autor.getCorreo(), "Su articulo fue aprobado", "Se le informa que su articulo ha sido aprobado"));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if ((rev.getEstado1().equals(ACEPTADO) && rev.getEstado2().equals(ACEPTADO)) && rev.getEstado3().equals(RECHAZADO)) {
+                            for (Articulo arti : listaArticulos) {
+                                if (rev.getCodigo().endsWith(arti.getCodigo())) {
+                                    for (Usuario autor : listaAutores) {
+                                        if (autor instanceof Autor) {
+                                            if (arti.getAutorNombre().equals(autor.getNombre())) {
+                                                System.out.println(sendMail(autor.getCorreo(), "Su articulo fue Rechazado", "Se le informa que su articulo ha sido rechazado"));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if ((rev.getEstado1().equals(RECHAZADO) && rev.getEstado2().equals(ACEPTADO)) && rev.getEstado3().equals(ACEPTADO)) {
+                            for (Articulo arti : listaArticulos) {
+                                if (rev.getCodigo().endsWith(arti.getCodigo())) {
+                                    for (Usuario autor : listaAutores) {
+                                        if (autor instanceof Autor) {
+                                            if (arti.getAutorNombre().equals(autor.getNombre())) {
+                                                System.out.println(sendMail(autor.getCorreo(), "Su articulo fue aceptado", "Se le informa que su articulo ha sido aceptado"));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if ((rev.getEstado1().equals(ACEPTADO) && rev.getEstado2().equals(RECHAZADO)) && rev.getEstado3().equals(ACEPTADO)) {
+                            for (Articulo arti : listaArticulos) {
+                                if (rev.getCodigo().endsWith(arti.getCodigo())) {
+                                    for (Usuario autor : listaAutores) {
+                                        if (autor instanceof Autor) {
+                                            if (arti.getAutorNombre().equals(autor.getNombre())) {
+                                                System.out.println(sendMail(autor.getCorreo(), "Su articulo fue Rechazado", "Se le informa que su articulo ha sido rechazado"));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
                     }
                 }
+                cargarPropiedades();
             }
         }
 
-    }
-
-    /**
-     * Metodo que permite registrar la revision en el fichero
-     *
-     * @param revision Revision que se desea guardar
-     */
-    public static void createRevision(Revision revision) {
-        // Código para registrar la revisión en un archivo y guardar la información.
-        Revision rev = new Revision(null, null, null, null, null, null, null, null);
-        listaRevisiones.add(revision);
-        ManejoArchivos.EscribirArchivo("revisiones.txt", revision.toString());
     }
 
     /**
@@ -281,7 +370,7 @@ public class Sistema {
         while (rev2.equals(rev1)) {
             rev2 = asignarRevisor();
         }
-        Articulo articulo = new Articulo(titulo, resumen, contenido, palabras, crearCodigo(), crearCodigo());
+        Articulo articulo = new Articulo(titulo, resumen, contenido, palabras, autor.getNombre(), crearCodigo());
         articulo.setRevisor1(rev1);
         articulo.setRevisor2(rev2);
         Revision revision = new Revision(articulo.getCodigo(), articulo.getTitulo());
@@ -291,6 +380,8 @@ public class Sistema {
         sc.nextLine();
         System.out.println(articulo.getRev1().correoElectronico + "\nSe le escribe con el objetivo de indicarle que se le asigno revisar el articulo con el codigo: " + articulo.getCodigo());
         System.out.println(articulo.getRev2().correoElectronico + "\nSe le escribe con el objetivo de indicarle que se le asigno revisar el articulo con el codigo: " + articulo.getCodigo());
+        sendMail(rev1.getCorreo(), "Debe revisar el articulo: " + articulo.getCodigo(), articulo.getContenido());
+        sendMail(rev2.getCorreo(), "Debe revisar el articulo: " + articulo.getCodigo(), articulo.getContenido());
     }
 
     /**

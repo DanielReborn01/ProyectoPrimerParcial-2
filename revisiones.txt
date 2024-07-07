@@ -3,3 +3,6 @@
 t1bd,,uwu,uwu,owo,RECHAZADO,ACEPTADO,ACEPTADO
 z6nw,,owo,me gusta,me disgusta,RECHAZADO,ACEPTADO,RECHAZADO
 vrdx,,me gusta,me disgusta,lo amo,RECHAZADO,ACEPTADO,ACEPTADO
+t1yf,fd,uwu,me gusta,owo,RECHAZADO,ACEPTADO,RECHAZADO
+ad04,fd,uwu,iwi,uwu,RECHAZADO,ACEPTADO,RECHAZADO
+jfay,fd,me gusta,uwu,owo,RECHAZADO,RECHAZADO,RECHAZADO
