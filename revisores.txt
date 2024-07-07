@@ -1,0 +1,7 @@
+Lloid,Frontera,lfrontera@revisor.com,misterio,12,lfrontera,23,R
+Antonio,Neumane,anto@revisor.com,misterio,12,anto,24,R
+Jorge,Perez,jorgep@revisor.com,canto,12,jorgep,25,R
+Pedro,infante,pedroin@revisor.com,misterio,12,pedroin,26,R
+Antonio,Banderas,antbanderas@editor.com,DailyPlanet,antbanderas,21,E
+Fabricio,Gutierrez,fabrig@editor.com,DailyPlanet,fabrig,21,E
+Oliver,Ponce,olivep@editor.com,DailyPlanet,olivep,21,E
